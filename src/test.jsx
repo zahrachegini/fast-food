@@ -1,25 +1,47 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CategoryList from "./components/CategoryList/CategoryList";
 import Header from "./components/Header/Header";
+import axios from "./axios";
 import Loading from "./components/Loading/Loading";
 import FastFoodList from "./components/FastFoodList/FastFoodList";
 import SerachBar from "./components/SearchBar/SerachBar";
-import useAxios from "./useAxios";
 import "./App.css";
 import notFound from "./assets/images/404.png";
 
+axios.defaults.baseURL =
+  "https://react-mini-projects-api.classbon.com/FastFood";
 function App() {
-  const [url, setUrl] = useState("/FastFood/list");
-  const [fastFoodItems, , loading] = useAxios({
-    url,
-  });
+  const [response, setResponse] = useState(null);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  const [fastFoodItems, setFastFoodItems] = useState([]);
+
+  const fetchData = async (categoryId = null) => {
+    setLoading(true);
+    const response = await axios.get(
+      `/FastFood/list/${categoryId ? "?categoryId=" + categoryId : ""}`
+    );
+
+    setLoading(false);
+    setFastFoodItems(response.data);
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const filterItems = (categoryId) => {
-    setUrl(`/FastFood/list/${categoryId ? "?categoryId=" + categoryId : ""}`);
+    fetchData(categoryId);
   };
 
   const searchItems = async (term) => {
-    setUrl(`/FastFood/search/${term ? "?term=" + term : ""}`);
+    setLoading(true);
+    const response = await axios.get(
+      `FastFood/search/${term ? "?term=" + term : ""}`
+    );
+    setLoading(false);
+    setFastFoodItems(response.data);
   };
 
   const renderContent = () => {
